@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBERNEX // Project 01: Next-Gen Bionic Augmentation</title>
+
+  <!-- Google Fonts: Orbitron & Rajdhani for futuristic cyberpunk typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cyberDark: '#05070B',
+            cyberSurface: '#0B0F19',
+            cyberCard: 'rgba(15, 23, 42, 0.75)',
+            cyberBorder: 'rgba(0, 243, 255, 0.25)',
+            neonCyan: '#00F3FF',
+            neonCrimson: '#FF0055',
+            neonViolet: '#9D00FF',
+            neonAmber: '#FFB800',
+            matrixGreen: '#00FF66'
+          },
+          fontFamily: {
+            orbitron: ['Orbitron', 'sans-serif'],
+            rajdhani: ['Rajdhani', 'sans-serif'],
+            mono: ['Share Tech Mono', 'monospace']
+          },
+          boxShadow: {
+            cyanGlow: '0 0 25px rgba(0, 243, 255, 0.45)',
+            crimsonGlow: '0 0 25px rgba(255, 0, 85, 0.45)',
+            violetGlow: '0 0 25px rgba(157, 0, 255, 0.45)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Scanline overlay effect */
+    .scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* Cyber grid pattern */
+    .cyber-grid {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(0, 243, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 243, 255, 0.06) 1px, transparent 1px);
+    }
+
+    /* Sci-fi bracket corners */
+    .hud-box {
+      position: relative;
+      background: rgba(11, 15, 25, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      backdrop-filter: blur(12px);
+    }
+    .hud-box::before, .hud-box::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: #00F3FF;
+      pointer-events: none;
+    }
+    .hud-box::before {
+      top: -1px;
+      left: -1px;
+      border-top: 2px solid #00F3FF;
+      border-left: 2px solid #00F3FF;
+    }
+    .hud-box::after {
+      bottom: -1px;
+      right: -1px;
+      border-bottom: 2px solid #00F3FF;
+      border-right: 2px solid #00F3FF;
+    }
+
+    /* Glitch effect on title */
+    .glitch-text {
+      position: relative;
+      text-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+    }
+
+    /* Rotating SVG HUD Animation keyframes */
+    @keyframes spinClockwise {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spinCounterClockwise {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+    @keyframes pulseCore {
+      0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 15px #00F3FF); }
+      50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 35px #FF0055); }
+    }
+    .animate-spin-cw {
+      animation: spinClockwise 22s linear infinite;
+      transform-origin: center;
+    }
+    .animate-spin-ccw {
+      animation: spinCounterClockwise 16s linear infinite;
+      transform-origin: center;
+    }
+    .animate-pulse-core {
+      animation: pulseCore 3s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #05070B;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #00F3FF;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body class="bg-cyberDark text-slate-200 font-rajdhani relative overflow-x-hidden selection:bg-neonCyan selection:text-black">
+  <!-- Scanlines Effect Layer -->
+  <div class="scanlines fixed inset-0 z-50 pointer-events-none opacity-40"></div>
+
+  <!-- Cyber Grid Background -->
+  <div class="cyber-grid fixed inset-0 pointer-events-none z-0"></div>
+
+  <!-- Glowing Radial Ambient Lights -->
+  <div class="fixed top-[-15%] left-[-10%] w-[550px] h-[550px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-pink-600/10 rounded-full blur-[160px] pointer-events-none z-0"></div>
+
+  <nav class="sticky top-0 z-40 backdrop-blur-md bg-cyberDark/80 border-b border-cyberBorder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo Branding -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded border border-neonCyan bg-neonCyan/10 flex items-center justify-center font-orbitron font-black text-neonCyan text-xl shadow-cyanGlow group-hover:scale-105 transition-transform">
+          CX
+        </div>
+        <div>
+          <span class="font-orbitron font-extrabold tracking-wider text-xl text-white block">CYBER<span class="text-neonCyan">NEX</span></span>
+          <span class="text-[10px] font-mono tracking-widest text-slate-400 uppercase">SYS VER 3.9 // BIONICS</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <div class="hidden md:flex items-center gap-8 font-mono text-sm uppercase tracking-widest text-slate-300">
+        <a href="#overview" class="hover:text-neonCyan transition-colors flex items-center gap-1.5"><span class="text-neonCyan">//01</span> Overview</a>
+        <a href="#diagnostics" class="hover:text-neonCyan transition-colors flex items-center gap-1.5"><span class="text-neonCyan">//02</span> Diagnostics</a>
+        <a href="#matrix" class="hover:text-neonCyan transition-colors flex items-center gap-1.5"><span class="text-neonCyan">//03</span> Augments</a>
+        <a href="#terminal" class="hover:text-neonCyan transition-colors flex items-center gap-1.5"><span class="text-neonCyan">//04</span> Console CLI</a>
+      </div>
+
+      <!-- Action Items & Audio Synthesizer Toggle -->
+      <div class="flex items-center gap-3">
+        <button id="soundToggleBtn" onclick="toggleAudio()" class="px-3 py-2 border border-slate-700 hover:border-neonCyan text-xs font-mono rounded text-slate-300 hover:text-neonCyan transition flex items-center gap-1.5" title="Toggle Synthesizer Feedback Sound">
+          <span id="soundIndicator" class="inline-block w-2 h-2 rounded-full bg-slate-500"></span>
+          <span id="soundLabel">SFX: OFF</span>
+        </button>
+
+        <a href="#diagnostics" class="hidden sm:inline-flex items-center justify-center px-5 py-2.5 font-orbitron text-xs font-bold uppercase tracking-wider text-black bg-neonCyan hover:bg-white transition-all shadow-cyanGlow rounded clip-corner">
+          Sync Rig
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <section id="overview" class="relative z-10 pt-16 pb-24 lg:pt-28 lg:pb-32 overflow-hidden border-b border-cyberBorder/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- Left: Hero Headline & Description -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-neonCyan/10 border border-neonCyan/30 text-neonCyan font-mono text-xs tracking-widest uppercase">
+            <span class="w-2 h-2 rounded-full bg-neonCyan animate-ping"></span>
+            Project Apex-07 // Task 1 Active Spec
+          </div>
+
+          <h1 class="text-4xl sm:text-6xl lg:text-7xl font-orbitron font-black text-white leading-tight uppercase glitch-text">
+            Bionic <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-teal-300 to-neonCrimson">
+              Transcendence
+            </span>
+          </h1>
+
+          <p class="text-lg sm:text-xl text-slate-400 max-w-xl font-rajdhani font-medium leading-relaxed">
+            Replace biological weakness with military-grade cybernetics. Seamless neuro-synaptic interfaces engineered with hyper-conductive graphene conduits, synthetic carbon lattices, and sub-millisecond reflex matrices.
+          </p>
+
+          <!-- Buttons & Call to Action -->
+          <div class="flex flex-wrap gap-4 pt-4">
+            <button onclick="triggerSyntheticScan()" class="px-8 py-4 font-orbitron font-bold uppercase tracking-wider text-black bg-neonCyan hover:bg-cyan-200 transition-all rounded shadow-cyanGlow flex items-center gap-3">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Run Neuro Sync
+            </button>
+            <a href="#terminal" class="px-8 py-4 font-orbitron font-bold uppercase tracking-wider text-neonCyan border border-neonCyan/50 hover:border-neonCyan hover:bg-neonCyan/10 transition-all rounded">
+              Launch CLI
+            </a>
+          </div>
+
+          <!-- Real-time Hero Telemetry Stats -->
+          <div class="grid grid-cols-3 gap-4 pt-8 border-t border-slate-800">
+            <div class="hud-box p-4 rounded">
+              <span class="text-xs font-mono text-slate-400 uppercase block">Synaptic Latency</span>
+              <span class="text-2xl sm:text-3xl font-orbitron font-bold text-neonCyan">&lt;0.08<span class="text-sm font-mono text-slate-400">ms</span></span>
+            </div>
+            <div class="hud-box p-4 rounded">
+              <span class="text-xs font-mono text-slate-400 uppercase block">Data Throughput</span>
+              <span class="text-2xl sm:text-3xl font-orbitron font-bold text-white">128<span class="text-sm font-mono text-slate-400">TB/s</span></span>
+            </div>
+            <div class="hud-box p-4 rounded">
+              <span class="text-xs font-mono text-slate-400 uppercase block">Biocompatibility</span>
+              <span class="text-2xl sm:text-3xl font-orbitron font-bold text-neonCrimson">99.8<span class="text-sm font-mono text-slate-400">%</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Animated SVG Cyborg Neural Core Schematic -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="relative w-72 h-72 sm:w-96 sm:h-96 flex items-center justify-center">
+            
+            <!-- Exterior Radar Rings & Grid -->
+            <svg class="w-full h-full" viewBox="0 0 400 400">
+              <!-- Outer Dashed Ring -->
+              <circle cx="200" cy="200" r="180" stroke="rgba(0, 243, 255, 0.2)" stroke-width="1.5" stroke-dasharray="8 6" fill="none" class="animate-spin-cw" />
+              <!-- Middle Calibrated Ring -->
+              <circle cx="200" cy="200" r="140" stroke="rgba(255, 0, 85, 0.35)" stroke-width="2" stroke-dasharray="24 12" fill="none" class="animate-spin-ccw" />
+              <!-- Tech Arc Accents -->
+              <path d="M 200,30 A 170,170 0 0,1 370,200" fill="none" stroke="#00F3FF" stroke-width="3" stroke-linecap="round" />
+              <path d="M 200,370 A 170,170 0 0,1 30,200" fill="none" stroke="#FF0055" stroke-width="3" stroke-linecap="round" />
+              
+              <!-- Crosshair Lines -->
+              <line x1="200" y1="10" x2="200" y2="390" stroke="rgba(0, 243, 255, 0.15)" stroke-width="1" stroke-dasharray="4 4" />
+              <line x1="10" y1="200" x2="390" y2="200" stroke="rgba(0, 243, 255, 0.15)" stroke-width="1" stroke-dasharray="4 4" />
+
+              <!-- Cyber Hexagon Lattice Core -->
+              <polygon points="200,120 270,160 270,240 200,280 130,240 130,160" fill="rgba(0, 243, 255, 0.05)" stroke="#00F3FF" stroke-width="2" class="animate-spin-ccw" />
+
+              <!-- Pulsing Center Bio-Quantum Core -->
+              <circle cx="200" cy="200" r="45" fill="url(#coreGradient)" class="animate-pulse-core" />
+              <circle cx="200" cy="200" r="18" fill="#FFFFFF" />
+
+              <!-- Gradients -->
+              <defs>
+                <radialGradient id="coreGradient" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#00F3FF" />
+                  <stop offset="70%" stop-color="#9D00FF" />
+                  <stop offset="100%" stop-color="#FF0055" />
+                </radialGradient>
+              </defs>
+            </svg>
+
+            <!-- Holographic Overlays & Badges -->
+            <div class="absolute -top-3 -right-3 font-mono text-[11px] text-neonCyan bg-cyberDark/90 border border-neonCyan/40 px-2.5 py-1 rounded">
+              CORE VOLTAGE: 1.21 GW
+            </div>
+            <div class="absolute -bottom-3 -left-3 font-mono text-[11px] text-neonCrimson bg-cyberDark/90 border border-neonCrimson/40 px-2.5 py-1 rounded">
+              CHASSIS: TITANIUM-9
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="diagnostics" class="py-24 relative z-10 border-b border-cyberBorder/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-neonCyan font-mono text-xs uppercase tracking-widest">// Hardware Modular Interface</span>
+        <h2 class="text-3xl sm:text-5xl font-orbitron font-bold text-white uppercase mt-2">Active Augmentations</h2>
+        <p class="text-slate-400 font-rajdhani mt-3 text-lg">Click a cybernetic module below to inspect real-time neural diagnostics, operational load, and combat readiness.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Module Selector Buttons (Left Column) -->
+        <div class="lg:col-span-5 space-y-4">
+          
+          <!-- Module 1: Cortex -->
+          <button onclick="selectModule('neural')" id="modBtn-neural" class="module-btn w-full text-left p-5 rounded hud-box border-neonCyan bg-neonCyan/10 transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded bg-neonCyan/20 text-neonCyan flex items-center justify-center font-orbitron font-bold text-xl border border-neonCyan/40">
+                01
+              </div>
+              <div>
+                <h3 class="font-orbitron font-bold text-white text-lg group-hover:text-neonCyan transition">Neural Link Cortex (V4)</h3>
+                <p class="text-slate-400 text-xs font-mono uppercase">Direct Synaptic Bus // 128 TB/s</p>
+              </div>
+            </div>
+            <span class="text-neonCyan font-mono text-sm">&bull; ONLINE</span>
+          </button>
+
+          <!-- Module 2: Optics -->
+          <button onclick="selectModule('optics')" id="modBtn-optics" class="module-btn w-full text-left p-5 rounded hud-box border-slate-800 hover:border-neonCyan/50 transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded bg-slate-800 text-slate-300 flex items-center justify-center font-orbitron font-bold text-xl border border-slate-700">
+                02
+              </div>
+              <div>
+                <h3 class="font-orbitron font-bold text-white text-lg group-hover:text-neonCyan transition">Bionic Vision HUD (Ocular)</h3>
+                <p class="text-slate-400 text-xs font-mono uppercase">Thermal + LiDAR + Target Lock</p>
+              </div>
+            </div>
+            <span class="text-slate-500 font-mono text-sm">&bull; STANDBY</span>
+          </button>
+
+          <!-- Module 3: Musculoskeletal -->
+          <button onclick="selectModule('exo')" id="modBtn-exo" class="module-btn w-full text-left p-5 rounded hud-box border-slate-800 hover:border-neonCyan/50 transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded bg-slate-800 text-slate-300 flex items-center justify-center font-orbitron font-bold text-xl border border-slate-700">
+                03
+              </div>
+              <div>
+                <h3 class="font-orbitron font-bold text-white text-lg group-hover:text-neonCyan transition">Myomer Carbon Exoskeleton</h3>
+                <p class="text-slate-400 text-xs font-mono uppercase">4500kg Tensile // Kinetic Absorber</p>
+              </div>
+            </div>
+            <span class="text-slate-500 font-mono text-sm">&bull; READY</span>
+          </button>
+
+          <!-- Module 4: Power Core -->
+          <button onclick="selectModule('power')" id="modBtn-power" class="module-btn w-full text-left p-5 rounded hud-box border-slate-800 hover:border-neonCyan/50 transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded bg-slate-800 text-slate-300 flex items-center justify-center font-orbitron font-bold text-xl border border-slate-700">
+                04
+              </div>
+              <div>
+                <h3 class="font-orbitron font-bold text-white text-lg group-hover:text-neonCyan transition">Plasma Micro-Turbine</h3>
+                <p class="text-slate-400 text-xs font-mono uppercase">Electrolyte Cell // 12-Year Cycle</p>
+              </div>
+            </div>
+            <span class="text-slate-500 font-mono text-sm">&bull; CHARGED</span>
+          </button>
+
+        </div>
+
+        <!-- Diagnostics Screen (Right Column) -->
+        <div class="lg:col-span-7">
+          <div class="hud-box p-6 sm:p-8 rounded-lg border-neonCyan/40 relative">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+              <div>
+                <span class="text-xs font-mono text-neonCyan uppercase tracking-widest">// TELEMETRY FEED</span>
+                <h3 id="diagTitle" class="text-2xl font-orbitron font-bold text-white">Neural Link Cortex (V4)</h3>
+              </div>
+              <span id="diagStatus" class="px-3 py-1 font-mono text-xs rounded uppercase bg-green-500/20 text-green-400 border border-green-500/30">
+                STATUS: OPTIMAL
+              </span>
+            </div>
+
+            <!-- Diagnostics Description -->
+            <p id="diagDesc" class="text-slate-300 font-rajdhani text-lg leading-relaxed mb-6">
+              Quantum-entangled cranial mesh inserted at the C1 cervical juncture. Bridges human neurotransmitters with external fiber nodes at near light-speed transfer rates.
+            </p>
+
+            <!-- Metrics Bars -->
+            <div class="space-y-4 font-mono text-sm">
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-slate-400">Power Consumption</span>
+                  <span id="powerMetric" class="text-neonCyan font-bold">14.2% (120W)</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded overflow-hidden">
+                  <div id="powerBar" class="h-full bg-neonCyan transition-all duration-500" style="width: 14%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-slate-400">Thermal Load</span>
+                  <span id="thermalMetric" class="text-neonAmber font-bold">36.8°C (Cryo-Stablized)</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded overflow-hidden">
+                  <div id="thermalBar" class="h-full bg-neonAmber transition-all duration-500" style="width: 37%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-slate-400">Bio-Immune Rejection Risk</span>
+                  <span id="rejectionMetric" class="text-green-400 font-bold">0.02% (Neutralized)</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded overflow-hidden">
+                  <div id="rejectionBar" class="h-full bg-green-500 transition-all duration-500" style="width: 2%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Specifications Table -->
+            <div class="mt-8 pt-6 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div class="p-3 bg-cyberSurface rounded border border-slate-800">
+                <span class="text-[11px] font-mono text-slate-400 block">ENCRYPTION</span>
+                <span id="specCrypt" class="font-orbitron font-bold text-white text-sm">512-bit Qubit</span>
+              </div>
+              <div class="p-3 bg-cyberSurface rounded border border-slate-800">
+                <span class="text-[11px] font-mono text-slate-400 block">REFLEX GAIN</span>
+                <span id="specReflex" class="font-orbitron font-bold text-white text-sm">+850%</span>
+              </div>
+              <div class="p-3 bg-cyberSurface rounded border border-slate-800">
+                <span class="text-[11px] font-mono text-slate-400 block">WEIGHT</span>
+                <span id="specWeight" class="font-orbitron font-bold text-white text-sm">82 Grams</span>
+              </div>
+              <div class="p-3 bg-cyberSurface rounded border border-slate-800">
+                <span class="text-[11px] font-mono text-slate-400 block">MATERIAL</span>
+                <span id="specMaterial" class="font-orbitron font-bold text-white text-sm">Graphene II</span>
+              </div>
+            </div>
+
+            <!-- Module Test Button -->
+            <div class="mt-6 flex justify-end">
+              <button onclick="runModuleDiagnostics()" class="px-5 py-2 font-mono text-xs uppercase bg-neonCyan/10 text-neonCyan border border-neonCyan/40 hover:bg-neonCyan hover:text-black transition rounded">
+                Initiate Stress Test &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="matrix" class="py-24 relative z-10 border-b border-cyberBorder/50 bg-cyberSurface/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <span class="text-neonCrimson font-mono text-xs uppercase tracking-widest">// Quantum Engineering Matrix</span>
+        <h2 class="text-3xl sm:text-5xl font-orbitron font-bold text-white uppercase mt-2">Next-Gen Specifications</h2>
+        <p class="text-slate-400 font-rajdhani mt-3 text-lg">Every component conforms to Aerospace Combat Spec 2088 standards.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Card 1 -->
+        <div class="hud-box p-6 rounded hover:border-neonCyan transition group">
+          <div class="w-10 h-10 mb-4 rounded bg-neonCyan/10 text-neonCyan flex items-center justify-center font-orbitron font-bold border border-neonCyan/30">
+            &alpha;
+          </div>
+          <h4 class="font-orbitron font-bold text-white text-xl mb-2 group-hover:text-neonCyan transition">Diamond-Coated Titanium Alloy</h4>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Forged with atomic precision, the external shell withstands impacts exceeding 50,000 Newtons and resists temperature variances from -190°C to 1200°C.
+          </p>
+          <div class="font-mono text-xs text-neonCyan flex justify-between border-t border-slate-800 pt-3">
+            <span>DENSITY: 4.5 g/cm³</span>
+            <span>SHORE HARDNESS: 95D</span>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="hud-box p-6 rounded hover:border-neonCrimson transition group">
+          <div class="w-10 h-10 mb-4 rounded bg-neonCrimson/10 text-neonCrimson flex items-center justify-center font-orbitron font-bold border border-neonCrimson/30">
+            &beta;
+          </div>
+          <h4 class="font-orbitron font-bold text-white text-xl mb-2 group-hover:text-neonCrimson transition">Cryogenic Micro-Looping</h4>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            Sub-zero liquid gallium circulating through carbon micro-capillaries guarantees instant heat dissipation during high-output overclocking bursts.
+          </p>
+          <div class="font-mono text-xs text-neonCrimson flex justify-between border-t border-slate-800 pt-3">
+            <span>COOLANT: Liquid Ga-In</span>
+            <span>BURST CAPACITY: 300%</span>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="hud-box p-6 rounded hover:border-neonViolet transition group">
+          <div class="w-10 h-10 mb-4 rounded bg-neonViolet/10 text-neonViolet flex items-center justify-center font-orbitron font-bold border border-neonViolet/30">
+            &gamma;
+          </div>
+          <h4 class="font-orbitron font-bold text-white text-xl mb-2 group-hover:text-neonViolet transition">Neural AI Co-Processor</h4>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4">
+            An on-board synthetic sub-consciousness parses sensory inputs 200x quicker than human reflexes, delivering pre-cognitive danger detection.
+          </p>
+          <div class="font-mono text-xs text-neonViolet flex justify-between border-t border-slate-800 pt-3">
+            <span>OPS: 750 TFLOPS</span>
+            <span>CYCLE: 1.2 picoseconds</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="terminal" class="py-24 relative z-10 border-b border-cyberBorder/50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-xl mx-auto mb-10">
+        <span class="text-neonCyan font-mono text-xs uppercase tracking-widest">// Direct Firmware Access</span>
+        <h2 class="text-3xl font-orbitron font-bold text-white uppercase mt-2">CYBERNEX Terminal</h2>
+        <p class="text-slate-400 font-rajdhani mt-2">Run telemetry queries directly against the neural system core.</p>
+      </div>
+
+      <!-- Quick Command Pill Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
+        <span class="text-xs font-mono text-slate-400 mr-2">Quick Commands:</span>
+        <button onclick="executeTerminalCommand('help')" class="px-3 py-1 font-mono text-xs bg-cyberSurface hover:bg-neonCyan/20 text-neonCyan border border-neonCyan/30 rounded">help</button>
+        <button onclick="executeTerminalCommand('status')" class="px-3 py-1 font-mono text-xs bg-cyberSurface hover:bg-neonCyan/20 text-neonCyan border border-neonCyan/30 rounded">status</button>
+        <button onclick="executeTerminalCommand('scan')" class="px-3 py-1 font-mono text-xs bg-cyberSurface hover:bg-neonCyan/20 text-neonCyan border border-neonCyan/30 rounded">scan</button>
+        <button onclick="executeTerminalCommand('sync')" class="px-3 py-1 font-mono text-xs bg-cyberSurface hover:bg-neonCyan/20 text-neonCyan border border-neonCyan/30 rounded">sync</button>
+        <button onclick="executeTerminalCommand('clear')" class="px-3 py-1 font-mono text-xs bg-cyberSurface hover:bg-neonCrimson/20 text-neonCrimson border border-neonCrimson/30 rounded">clear</button>
+      </div>
+
+      <!-- Terminal Window Box -->
+      <div class="hud-box rounded-lg overflow-hidden border-neonCyan/40 shadow-cyanGlow">
+        <!-- Terminal Header -->
+        <div class="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between font-mono text-xs text-slate-400">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+            <span class="ml-2 text-white">cybernex-root@bionic-node-07:~</span>
+          </div>
+          <span class="text-neonCyan">PORT 8042 [ACTIVE]</span>
+        </div>
+
+        <!-- Terminal Output Area -->
+        <div id="terminalScreen" class="p-5 font-mono text-sm h-72 overflow-y-auto space-y-2 text-green-400 bg-cyberDark/95 selection:bg-green-400 selection:text-black">
+          <div>[SYSTEM READY] CYBERNEX Firmware v3.9.0-Apex initialized.</div>
+          <div class="text-slate-400">Type <span class="text-neonCyan font-bold">help</span> to list commands or click the shortcut buttons above.</div>
+        </div>
+
+        <!-- Terminal Input Line -->
+        <form id="terminalForm" onsubmit="handleTerminalSubmit(event)" class="border-t border-slate-800 bg-slate-900/60 p-3 flex items-center gap-2 font-mono text-sm">
+          <span class="text-neonCyan font-bold">&gt;&gt;</span>
+          <input type="text" id="termInput" placeholder="Enter cyber command..." autocomplete="off" class="w-full bg-transparent text-white outline-none placeholder-slate-600 font-mono">
+          <button type="submit" class="px-4 py-1 text-xs uppercase bg-neonCyan font-bold text-black rounded hover:bg-white transition">EXEC</button>
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="relative z-10 pt-16 pb-12 bg-cyberDark border-t border-cyberBorder/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div class="md:col-span-2 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded border border-neonCyan bg-neonCyan/10 flex items-center justify-center font-orbitron font-bold text-neonCyan">
+              CX
+            </div>
+            <span class="font-orbitron font-extrabold text-white text-lg tracking-wider">CYBERNEX BIONICS</span>
+          </div>
+          <p class="text-slate-400 font-rajdhani text-base max-w-sm">
+            Developed for Techfest — Asia's Largest Science &amp; Technology Festival. Task 1: Cyborg-Themed Landing Page Development.
+          </p>
+          <div class="flex items-center gap-2 font-mono text-xs text-neonCyan">
+            <span class="w-2 h-2 rounded-full bg-neonCyan animate-pulse"></span>
+            SYS STATUS: ALL SYSTEMS NOMINAL
+          </div>
+        </div>
+
+        <div>
+          <h5 class="font-orbitron text-white text-sm font-bold uppercase mb-3">Protocols</h5>
+          <ul class="space-y-2 font-mono text-xs text-slate-400">
+            <li><a href="#" class="hover:text-neonCyan transition">Cranial Integration</a></li>
+            <li><a href="#" class="hover:text-neonCyan transition">Sub-Dermal Armor</a></li>
+            <li><a href="#" class="hover:text-neonCyan transition">Optic Calibration</a></li>
+            <li><a href="#" class="hover:text-neonCyan transition">Electrolyte Storage</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h5 class="font-orbitron text-white text-sm font-bold uppercase mb-3">Verification</h5>
+          <ul class="space-y-2 font-mono text-xs text-slate-400">
+            <li>Techfest Domain: Web Dev</li>
+            <li>Task: 1 // Cyborg Landing Page</li>
+            <li>Reward Claim: 50 Coins</li>
+            <li>Target: IIT Bombay Techfest</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-slate-500 gap-4">
+        <div>&copy; 2026 CYBERNEX PROTOCOL. ALL RIGHTS RESERVED.</div>
+        <div>DESIGNED FOR TECHFEST COMPETITION</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // --- 1. Web Audio API Sci-Fi Sound Synthesizer ---
+    let audioCtx = null;
+    let soundEnabled = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playBeep(freq = 880, type = 'sine', duration = 0.08) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.warn("Audio Context init error", e);
+      }
+    }
+
+    function toggleAudio() {
+      soundEnabled = !soundEnabled;
+      const indicator = document.getElementById('soundIndicator');
+      const label = document.getElementById('soundLabel');
+      if (soundEnabled) {
+        initAudio();
+        indicator.className = 'inline-block w-2 h-2 rounded-full bg-neonCyan animate-pulse';
+        label.innerText = 'SFX: ON';
+        playBeep(1200, 'triangle', 0.12);
+      } else {
+        indicator.className = 'inline-block w-2 h-2 rounded-full bg-slate-500';
+        label.innerText = 'SFX: OFF';
+      }
+    }
+
+    // --- 2. Interactive Augmentation Diagnostics Switcher ---
+    const moduleData = {
+      neural: {
+        title: "Neural Link Cortex (V4)",
+        status: "STATUS: OPTIMAL",
+        statusClass: "bg-green-500/20 text-green-400 border-green-500/30",
+        desc: "Quantum-entangled cranial mesh inserted at the C1 cervical juncture. Bridges human neurotransmitters with external fiber nodes at near light-speed transfer rates.",
+        power: "14.2% (120W)",
+        powerPct: 14,
+        thermal: "36.8°C (Cryo-Stablized)",
+        thermalPct: 37,
+        rejection: "0.02% (Neutralized)",
+        rejectionPct: 2,
+        specCrypt: "512-bit Qubit",
+        specReflex: "+850%",
+        specWeight: "82 Grams",
+        specMaterial: "Graphene II"
+      },
+      optics: {
+        title: "Bionic Vision HUD (Ocular)",
+        status: "STATUS: SYNCHRONIZED",
+        statusClass: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+        desc: "Synthetic ocular implant delivering multi-spectrum sensor feedback: thermal imaging, 8K ultra-zoom, LiDAR environment reconstruction, and real-time biometric tracking.",
+        power: "28.5% (210W)",
+        powerPct: 28,
+        thermal: "38.2°C (Passive Cooled)",
+        thermalPct: 40,
+        rejection: "0.00% (Synthetic Silk)",
+        rejectionPct: 1,
+        specCrypt: "Quantum-Key",
+        specReflex: "+400%",
+        specWeight: "35 Grams",
+        specMaterial: "Sapphire Glass"
+      },
+      exo: {
+        title: "Myomer Carbon Exoskeleton",
+        status: "STATUS: ARMED & READY",
+        statusClass: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+        desc: "High-tensile synthetic muscle fibers interlaced with a titanium-carbide skeletal frame. Multiplies physical payload capacity while absorbing high-velocity ballistic impacts.",
+        power: "62.4% (850W)",
+        powerPct: 62,
+        thermal: "42.1°C (Fan Active)",
+        thermalPct: 55,
+        rejection: "0.05% (Bio-Inert)",
+        rejectionPct: 5,
+        specCrypt: "AES-GCM-256",
+        specReflex: "+620%",
+        specWeight: "6.4 kg",
+        specMaterial: "Titanium-Carbide"
+      },
+      power: {
+        title: "Plasma Micro-Turbine (Power Core)",
+        status: "STATUS: MAX EFFICIENCY",
+        statusClass: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+        desc: "Miniaturized cold fusion electrolyte cell designed to supply continuous kilowatt output to all augment modules for over 12 years without maintenance intervention.",
+        power: "99.1% (Storage Max)",
+        powerPct: 99,
+        thermal: "49.0°C (Active Shield)",
+        thermalPct: 65,
+        rejection: "0.00% (Sub-Dermal)",
+        rejectionPct: 1,
+        specCrypt: "Hardware Root",
+        specReflex: "N/A (Core)",
+        specWeight: "850 Grams",
+        specMaterial: "Depleted Iridium"
+      }
+    };
+
+    function selectModule(key) {
+      playBeep(750, 'sawtooth', 0.05);
+
+      // Reset button styles
+      document.querySelectorAll('.module-btn').forEach(btn => {
+        btn.classList.remove('border-neonCyan', 'bg-neonCyan/10');
+        btn.classList.add('border-slate-800');
+      });
+
+      // Highlight active button
+      const activeBtn = document.getElementById(`modBtn-${key}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-800');
+        activeBtn.classList.add('border-neonCyan', 'bg-neonCyan/10');
+      }
+
+      // Update diagnostic display data
+      const data = moduleData[key];
+      if (!data) return;
+
+      document.getElementById('diagTitle').innerText = data.title;
+      const statusEl = document.getElementById('diagStatus');
+      statusEl.className = `px-3 py-1 font-mono text-xs rounded uppercase border ${data.statusClass}`;
+      statusEl.innerText = data.status;
+
+      document.getElementById('diagDesc').innerText = data.desc;
+      document.getElementById('powerMetric').innerText = data.power;
+      document.getElementById('powerBar').style.width = `${data.powerPct}%`;
+
+      document.getElementById('thermalMetric').innerText = data.thermal;
+      document.getElementById('thermalBar').style.width = `${data.thermalPct}%`;
+
+      document.getElementById('rejectionMetric').innerText = data.rejection;
+      document.getElementById('rejectionBar').style.width = `${data.rejectionPct}%`;
+
+      document.getElementById('specCrypt').innerText = data.specCrypt;
+      document.getElementById('specReflex').innerText = data.specReflex;
+      document.getElementById('specWeight').innerText = data.specWeight;
+      document.getElementById('specMaterial').innerText = data.specMaterial;
+    }
+
+    function runModuleDiagnostics() {
+      playBeep(1400, 'square', 0.15);
+      const title = document.getElementById('diagTitle').innerText;
+      printTerminal(`Running stress diagnostic test on [${title}]...`);
+      setTimeout(() => {
+        printTerminal(`PASS: Stress cycles nominal. No data corruption or rejection detected.`);
+      }, 700);
+    }
+
+    function triggerSyntheticScan() {
+      playBeep(980, 'sine', 0.2);
+      printTerminal("INITIATING WHOLE-BODY NEURAL SYNC SCAN...");
+      setTimeout(() => {
+        printTerminal("SCAN COMPLETE: 4 of 4 Augments Synchronized at 99.8% Efficiency.");
+      }, 600);
+    }
+
+    // --- 3. Interactive Terminal CLI Logic ---
+    function printTerminal(msg, isCommand = false) {
+      const screen = document.getElementById('terminalScreen');
+      const row = document.createElement('div');
+      if (isCommand) {
+        row.className = 'text-white font-bold';
+        row.innerHTML = `<span class="text-neonCyan">&gt;&gt;</span> ${msg}`;
+      } else {
+        row.className = 'text-green-400';
+        row.innerText = msg;
+      }
+      screen.appendChild(row);
+      screen.scrollTop = screen.scrollHeight;
+    }
+
+    function executeTerminalCommand(cmd) {
+      const cleanCmd = cmd.trim().toLowerCase();
+      printTerminal(cleanCmd, true);
+      playBeep(800, 'sine', 0.04);
+
+      switch (cleanCmd) {
+        case 'help':
+          printTerminal("AVAILABLE PROTOCOLS:");
+          printTerminal("  status   - Displays overall rig telemetry and diagnostics");
+          printTerminal("  scan     - Performs active body neural & sensor scan");
+          printTerminal("  sync     - Synchronizes local implants with CYBERNEX satellite");
+          printTerminal("  ping     - Checks latency to neural backbone nodes");
+          printTerminal("  clear    - Clears the terminal buffer");
+          break;
+
+        case 'status':
+          printTerminal("[STATUS REPORT]");
+          printTerminal("  CHASSIS: APEX-07 TITANIUM ENCLOSURE");
+          printTerminal("  NEURAL BANDWIDTH: 128 TB/s [STABLE]");
+          printTerminal("  POWER LEVEL: 94.6% NOMINAL");
+          printTerminal("  BIO-COMPATIBILITY: 99.8% INTEGRATED");
+          break;
+
+        case 'scan':
+          printTerminal("Searching for neural anomalies...");
+          setTimeout(() => {
+            printTerminal("Scan finished: 0 anomalies detected. Neuro-synaptic bridge optimal.");
+          }, 400);
+          break;
+
+        case 'sync':
+          printTerminal("Establishing encrypted quantum bridge to node...");
+          setTimeout(() => {
+            printTerminal("SYNCHRONIZATION COMPLETED. Firmware hash verified.");
+          }, 500);
+          break;
+
+        case 'ping':
+          printTerminal("Pinging Apex core node at 127.0.0.1:8042...");
+          printTerminal("Reply received in 0.078ms. Zero packet loss.");
+          break;
+
+        case 'clear':
+          document.getElementById('terminalScreen').innerHTML = '';
+          break;
+
+        default:
+          printTerminal(`Command not recognized: "${cleanCmd}". Type "help" for a list of valid commands.`);
+          break;
+      }
+    }
+
+    function handleTerminalSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('termInput');
+      if (!input.value.trim()) return;
+      executeTerminalCommand(input.value);
+      input.value = '';
+    }
+  </script>
+</body>
+</html>
